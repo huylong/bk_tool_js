@@ -1,0 +1,87 @@
+// ==UserScript==
+// @name         xKuCoin Autoclicker
+// @version      1.1
+// @author       mudachyo
+// @match        *://www.kucoin.com/*
+// @icon         https://assets.staticimg.com/cms/media/3gfl2DgVUqjJ8FnkC7QxhvPmXmPgpt42FrAqklVMr.png
+// @downloadURL  https://github.com/mudachyo/xKuCoin/raw/main/xkucoin-autoclicker.user.js
+// @updateURL    https://github.com/mudachyo/xKuCoin/raw/main/xkucoin-autoclicker.user.js
+// @homepage     https://github.com/mudachyo/xKuCoin
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let autoClickerRunning = false;
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function clickRandomInsideElement(element) {
+        const rect = element.getBoundingClientRect();
+        const x = getRandomInt(rect.left, rect.right);
+        const y = getRandomInt(rect.top, rect.bottom);
+
+        const clickEvent = new MouseEvent('click', {
+            view: window,
+            bubbles: true,
+            cancelable: true,
+            clientX: x,
+            clientY: y
+        });
+
+        element.dispatchEvent(clickEvent);
+    }
+
+    function getCurrentEnergy() {
+        const energyElement = document.querySelector('.process--W73kB');
+        if (!energyElement) return null;
+
+        const currentEnergy = parseInt(energyElement.querySelector('span').textContent, 10);
+        return isNaN(currentEnergy) ? null : currentEnergy;
+    }
+
+    function findTargetElement() {
+        return document.querySelector('#root > div.container--WYn0q > div:nth-child(2) > div.mainTouch--DToch > div:nth-child(2) > div.frog--GPU1j');
+    }
+
+    function startAutoClicker() {
+        const element = findTargetElement();
+
+        if (!element) {
+            console.log('Không tìm thấy phần tử, thử lại...');
+            setTimeout(startAutoClicker, 1000);
+            return;
+        }
+
+        const currentEnergy = getCurrentEnergy();
+
+        if (currentEnergy === 0) {
+            const pauseDuration = getRandomInt(120000, 180000);
+            console.log(`Năng lượng bằng không, tạm dừng trong ${pauseDuration / 1000} giây`);
+            setTimeout(startAutoClicker, pauseDuration);
+        } else {
+            clickRandomInsideElement(element);
+            const clickInterval = getRandomInt(200, 500);
+            setTimeout(startAutoClicker, clickInterval);
+        }
+    }
+
+    function initializeAutoClicker() {
+        if (!autoClickerRunning && window.location.href.includes('/miniapp/tap-game')) {
+            console.log('Khởi tạo tự động click...');
+            autoClickerRunning = true;
+            setTimeout(startAutoClicker, 5000);
+        }
+    }
+
+    initializeAutoClicker();
+
+    const observer = new MutationObserver(() => {
+        initializeAutoClicker();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+})();
