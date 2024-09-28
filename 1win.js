@@ -18,8 +18,14 @@ function getRandomInt(min, max) {
 }
 
 function getCurrentEnergy() {
-    const energyElement = document.querySelector('span._energyText_qsqzt_106');
-    return energyElement ? parseInt(energyElement.textContent.trim()) : 0;
+    const energyElement = document.querySelector('#root > div._wrapper_1cplp_1 > div > footer > div._info_16i6o_10._footerInfo_16i6o_41 > div > div > div > div > span:nth-child(1)');
+    if (energyElement) {
+        let energyText = energyElement.textContent.replace(/\s/g, '').trim();
+        // Thay thế dấu chấm hoặc dấu phẩy bằng chuỗi rỗng
+        energyText = energyText.replace(/[.,]/g, '');
+        return parseInt(energyText, 10);
+    }
+    return 0;
 }
 
 function findClickerElement() {
