@@ -22,6 +22,10 @@
 
     function getCurrentEnergy() {
         const energyElement = document.querySelector("body > div.layout_layout__sx_l_ > div > div > div > div.Clicker_bottom__2XKip > div.Energy_energy__2wX36 > span");
+        if (!energyElement) {
+            console.log("Không tìm thấy phần tử energyElement");
+            return 0; // Trả về giá trị 0 nếu không tìm thấy phần tử
+        }
         const content = energyElement.textContent.split('/');
         return content ? parseInt(content[0].trim()) : 0;
     }
@@ -37,14 +41,14 @@
             console.log(`Lovely Autoclicker: Năng lượng thấp (${currentEnergy}), tạm dừng trong ${pauseDuration / 1000} giây`);
             setTimeout(autoclicker, pauseDuration);
         } else {
-            const coordinates = getCenterCoordinates();
+            const coordinates = getRandomCoordinates(findClickerElement());
             const element = document.elementFromPoint(coordinates.x, coordinates.y); // Get the element at the center
 
             if (element) {
                 triggerClickEvent(element, coordinates);
             }
 
-            const randomDelay = getRandomInt(300, 500);
+            const randomDelay = getRandomInt(200, 300);
             setTimeout(autoclicker, randomDelay);
         }
     }
@@ -94,8 +98,15 @@
         const offsetRangeY = 60;
 
         const x = getRandomInt(centerX - offsetRangeX, centerX + offsetRangeX);
-        const y = getRandomInt(centerY - offsetRangeY, centerY + offsetRangeY);
+        const y = getRandomInt(centerY + 100, centerY + offsetRangeY + 100);
 
+        return { x, y };
+    }
+
+    function getRandomCoordinates(element) {
+        const rect = element.getBoundingClientRect();
+        const x = getRandomInt(rect.left, rect.right);
+        const y = getRandomInt(rect.top, rect.bottom);
         return { x, y };
     }
 
