@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        Auto view ADS goatsbot
+// @name        Auto view ADS vertus
 // @namespace   Violentmonkey Scripts
-// @match       https://dev.goatsbot.xyz/*
+// @match       https://thevertus.app/*
 // @grant       none
 // @version     1.2
 // @author      -
@@ -16,7 +16,7 @@
             this.selector = selector;
             this.element = document.querySelector(selector);
             this.intervalId = null;
-            this.numberClick = 1;
+            this.reloadAfterTask = 3000; // Thời gian sau khi nhiệm vụ kết thúc (3s)
         }
 
         // Hàm sleep để tạm dừng trong khoảng thời gian ngẫu nhiên
@@ -45,6 +45,7 @@
                 view: window
             });
             element.dispatchEvent(mouseEvent);
+            console.log(`${type} chuột được kích hoạt cho phần tử: ${element}`);
         }
 
         // Hàm để bắt đầu tự động click
@@ -53,28 +54,25 @@
 
             this.element = document.querySelector(this.selector);
             if (!this.element) {
-                console.log('Không tìm thấy phần tử stop click!');
+                console.log('Không tìm thấy phần tử!');
                 return;
             }
 
             await this.triggerMouseEvent('click', this.element);
 
-            const repeatDelay  = this.getRandomInterval(100, 110) * 1000; // Nghỉ ngẫu nhiên 100 toi 110
+            const randomDelay = this.getRandomInterval(20, 25) * 1000; // Nghỉ ngẫu nhiên 20-25 giây
+            this.reloadAfterTask = this.getRandomInterval(6, 8) * 1000 * 60; // Nghỉ ngẫu nhiên 6-8 phut
+            await this.sleep(randomDelay);
 
-            // Gọi lại hàm start để thực hiện auto click lặp lại
-            this.intervalId = setTimeout(() => {
-                this.start(); // Lặp lại quá trình auto click
-            }, repeatDelay);
-
-            console.log('Click ads lần thứ ' + this.numberClick)
-
-            this.numberClick++;
+            setTimeout(() => {
+                this.reloadPageAndRestart();
+            }, this.reloadAfterTask); // Reload sau 3s
         }
 
         // Hàm để dừng tự động click
         stop() {
             if (this.intervalId) {
-                clearTimeout(this.intervalId); // Dừng thời gian chạy của setTimeout
+                clearInterval(this.intervalId);
                 this.intervalId = null;
                 console.log('Tự động click đã dừng lại.');
             }
@@ -84,7 +82,79 @@
         getRandomInterval(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+
+        // Hàm để reload trang và bắt đầu lại
+        async reloadPageAndRestart() {
+            const randomDelay = this.getRandomInterval(5, 10) * 1000; // Nghỉ ngẫu nhiên 5-10 giây
+            console.log(`Reload sau ${randomDelay / 1000} giây...`);
+            await this.sleep(randomDelay);
+
+            this.stop(); // Dừng trước khi reload
+
+            // Lưu trạng thái vào `localStorage`
+            localStorage.setItem('autoClickerActive', 'true');
+
+            // Reload lại trang
+            window.location.reload();
+        }
+
+        // Hàm để thực hiện các hành động sau khi reload trang
+        async performPostReloadActions() {
+            // Đợi trang tải hoàn toàn
+            await this.sleep(5000); // Đợi 5 giây sau khi reload
+
+            console.log("Bắt đầu các hành động sau khi reload...");
+
+            // Thực hiện click vào nút ngay sau khi bắt đầu
+            const button = document.querySelector("body > div:nth-child(12) > div.react-modal-sheet-container > div.react-modal-sheet-content > div > div._wrapper_16x1w_1");
+
+            if (button) {
+                await this.triggerMouseEvent('click', button);
+            } else {
+                console.log("Không tìm thấy button để click.");
+            }
+
+            await this.sleep(this.getRandomInterval(2, 3) * 1000);
+
+            const button1 = document.querySelector("#root > div._wrapper_gesw3_1 > div._wrapper_7gwnn_1 > div._activeTab_7gwnn_22");
+
+            if (button1) {
+                await this.triggerMouseEvent('click', button1);
+            } else {
+                console.log("Không tìm thấy button 1 để click.");
+            }
+
+            console.log("Đã hoàn thành các hành động sau khi reload.");
+            this.start(); // Tiếp tục vòng lặp click
+        }
     }
+
+    // Khởi tạo đối tượng AutoClicker
+    let clicker = null;
+
+    // Thêm button vào cuối body
+    const startButton = document.createElement('button');
+    startButton.innerText = "Start Ads";
+    startButton.style.position = 'fixed';
+    startButton.style.bottom = '10px';
+    startButton.style.right = '10px';
+    startButton.style.zIndex = '9999';
+    startButton.style.padding = '10px';
+    startButton.style.backgroundColor = '#28a745';
+    startButton.style.color = '#fff';
+    startButton.style.border = 'none';
+    startButton.style.borderRadius = '5px';
+    startButton.style.cursor = 'pointer';
+
+    // Gắn sự kiện click cho button để bắt đầu AutoClicker
+    startButton.addEventListener('click', () => {
+        console.log("Button được nhấn, bắt đầu AutoClicker...");
+        simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
+        clicker = new AutoClicker("#root > div._wrapper_gesw3_1 > div._scroll_15ap5_1 > div:nth-child(4) > div:nth-child(1) > div:nth-child(1)");
+
+        // Nếu không có trạng thái nào, bắt đầu quá trình click mới
+        clicker.start();
+    });
 
     function simulateTabVisibilityAndFocus() {
         // Giả lập document luôn ở trạng thái visible
@@ -135,32 +205,6 @@
         };
         window.requestAnimationFrame(fakeAnimation);
     }
-    
-
-    // Khởi tạo đối tượng AutoClicker
-    let clicker = null;
-
-    // Thêm button vào cuối body
-    const startButton = document.createElement('button');
-    startButton.innerText = "Start Ads";
-    startButton.style.position = 'fixed';
-    startButton.style.bottom = '10px';
-    startButton.style.right = '10px';
-    startButton.style.zIndex = '9999';
-    startButton.style.padding = '10px';
-    startButton.style.backgroundColor = '#28a745';
-    startButton.style.color = '#fff';
-    startButton.style.border = 'none';
-    startButton.style.borderRadius = '5px';
-    startButton.style.cursor = 'pointer';
-
-    // Gắn sự kiện click cho button để bắt đầu AutoClicker và giả lập visibility + focus
-    startButton.addEventListener('click', () => {
-        console.log("Button được nhấn, bắt đầu AutoClicker...");
-        simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
-        clicker = new AutoClicker("#tabs-\\:r2\\:--tabpanel-0 > div:nth-child(1) > div.css-kcqt6s > div > div > div.css-1vvnutk > button");
-        clicker.start(); // Bắt đầu AutoClicker mới
-    });
 
     // Thêm button xóa trạng thái AutoClicker
     const clearButton = document.createElement('button');
@@ -178,14 +222,23 @@
 
     // Gắn sự kiện click cho button xóa trạng thái
     clearButton.addEventListener('click', () => {
-        console.log("Button được nhấn, dừng AutoClicker...");
-        if (clicker) {
-            clicker.stop(); // Gọi hàm dừng lại AutoClicker
-        }
+        localStorage.removeItem('autoClickerActive');
+        console.log("Trạng thái autoClickerActive đã được xóa.");
+        alert("Trạng thái autoClickerActive đã được xóa.");
     });
 
     // Thêm button vào body
     document.body.appendChild(startButton);
     document.body.appendChild(clearButton);
 
+    // Kiểm tra trạng thái từ `localStorage` để biết có cần khởi động lại không
+    if (localStorage.getItem('autoClickerActive') === 'true') {
+        window.addEventListener('load', () => {
+            console.log("Trang đã được reload, khởi động lại hành động...");
+            simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
+            localStorage.removeItem('autoClickerActive'); // Xóa trạng thái
+            clicker = new AutoClicker("#root > div._wrapper_gesw3_1 > div._scroll_15ap5_1 > div:nth-child(4) > div:nth-child(1) > div:nth-child(1)");
+            clicker.performPostReloadActions(); // Thực hiện các hành động sau khi tải lại
+        });
+    }
 })();

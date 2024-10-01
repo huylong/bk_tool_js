@@ -1,7 +1,7 @@
 // ==UserScript==
-// @name        Auto view ADS goatsbot
+// @name        Auto view ADS Blue
 // @namespace   Violentmonkey Scripts
-// @match       https://dev.goatsbot.xyz/*
+// @match       https://bluefarming.xyz/*
 // @grant       none
 // @version     1.2
 // @author      -
@@ -24,9 +24,17 @@
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
+        checkClaimAds() {
+            const energyElement = document.querySelector("#root > div._container_1krht_1._container_dc403_1.white-box > button");
+            if (energyElement) {
+                return energyElement;
+            }
+            return false;
+        }
+
         // Hàm để kích hoạt sự kiện chuột với khoảng nghỉ ngẫu nhiên
         async triggerMouseEvent(type, element) {
-            const randomDelay = this.getRandomInterval(1, 3) * 1000; // Nghỉ ngẫu nhiên từ 1-3 giây
+            const randomDelay = this.getRandomInterval(1, 2) * 1000; // Nghỉ ngẫu nhiên từ 1-3 giây
             console.log(`Đang đợi ${randomDelay / 1000} giây trước khi click...`);
 
             await this.sleep(randomDelay); // Đợi ngẫu nhiên trước khi click
@@ -53,23 +61,31 @@
 
             this.element = document.querySelector(this.selector);
             if (!this.element) {
-                console.log('Không tìm thấy phần tử stop click!');
+                console.log('Không tìm thấy phần tử!');
                 return;
             }
 
+            console.log('Click ads lần thứ ' + this.numberClick);
+
+            const checkAds = this.checkClaimAds();
+
+            if (checkAds) {
+                await this.triggerMouseEvent('click', checkAds);
+            }
+
             await this.triggerMouseEvent('click', this.element);
-
-            const repeatDelay  = this.getRandomInterval(100, 110) * 1000; // Nghỉ ngẫu nhiên 100 toi 110
-
+            await this.sleepRandomTime(25, 30) * 1000; // Nghỉ ngẫu nhiên 22 toi 25s truoc khi nhan claim
+            await this.triggerMouseEvent('click', this.element);
+            const repeatDelay  = this.getRandomInterval(66, 80) * 1000; // Nghỉ ngẫu nhiên 20s toi 30s
             // Gọi lại hàm start để thực hiện auto click lặp lại
             this.intervalId = setTimeout(() => {
                 this.start(); // Lặp lại quá trình auto click
             }, repeatDelay);
 
-            console.log('Click ads lần thứ ' + this.numberClick)
-
             this.numberClick++;
         }
+
+        
 
         // Hàm để dừng tự động click
         stop() {
@@ -84,13 +100,18 @@
         getRandomInterval(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
+
+        sleepRandomTime(minSeconds = 2, maxSeconds = 4) {
+            const randomTime = Math.random() * (maxSeconds - minSeconds) + minSeconds;
+            return new Promise(resolve => setTimeout(resolve, randomTime * 1000));
+          }
     }
 
+    // Hàm giả lập document luôn ở trạng thái "visible" và window luôn được focus
     function simulateTabVisibilityAndFocus() {
         // Giả lập document luôn ở trạng thái visible
         Object.defineProperty(document, 'visibilityState', {
             configurable: true,
-            enumerable: true,
             get: function() {
                 return 'visible'; // Trả về 'visible' để tab luôn ở trạng thái visible
             }
@@ -98,7 +119,6 @@
 
         Object.defineProperty(document, 'hidden', {
             configurable: true,
-            enumerable: true,
             get: function() {
                 return false; // Trả về false để báo hiệu rằng tab không bị ẩn
             }
@@ -109,33 +129,23 @@
             event.stopImmediatePropagation(); // Ngăn sự kiện 'visibilitychange'
         }, true);
 
-        // Giả lập window luôn được focus
-        window.addEventListener('blur', (event) => {
+        // Giả lập sự kiện focus để tab luôn giữ focus
+        window.addEventListener('blur', function(event) {
             // Khi tab bị blur, ngay lập tức làm nó focus lại
             window.focus();
             console.log('Tab đã bị blur, focus lại ngay.');
         }, true);
 
-        window.addEventListener('focus', () => {
-            console.log('Tab đã được focus.');
-        });
-
-        // Giả lập document.hasFocus luôn trả về true
+        // Giả lập window luôn được focus
         Object.defineProperty(document, 'hasFocus', {
             configurable: true,
-            enumerable: true,
-            value: function() {
-                return true; // Luôn trả về true để báo hiệu rằng window luôn focus
+            get: function() {
+                return function() {
+                    return true; // Luôn trả về true để báo hiệu tab luôn focus
+                };
             }
         });
-
-        // Giả lập window.requestAnimationFrame liên tục chạy
-        const fakeAnimation = () => {
-            window.requestAnimationFrame(fakeAnimation); // Liên tục yêu cầu frame mới để trình duyệt nghĩ rằng tab vẫn đang active
-        };
-        window.requestAnimationFrame(fakeAnimation);
     }
-    
 
     // Khởi tạo đối tượng AutoClicker
     let clicker = null;
@@ -158,7 +168,7 @@
     startButton.addEventListener('click', () => {
         console.log("Button được nhấn, bắt đầu AutoClicker...");
         simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
-        clicker = new AutoClicker("#tabs-\\:r2\\:--tabpanel-0 > div:nth-child(1) > div.css-kcqt6s > div > div > div.css-1vvnutk > button");
+        clicker = new AutoClicker("#root > div._outlet_10ukh_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
         clicker.start(); // Bắt đầu AutoClicker mới
     });
 
