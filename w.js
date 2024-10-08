@@ -76,6 +76,8 @@ function autoClicker() {
         changedTouches: [touchObj],
       });
 
+      // Đảm bảo rằng event listener không phải là passive
+      button.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
       button.dispatchEvent(touchStartEvent);
 
       const delay = getRandomDelay(minDelay, maxDelay);
