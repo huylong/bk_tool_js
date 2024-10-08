@@ -18,7 +18,7 @@ function getRandomInt(min, max) {
 }
 
 function getCurrentEnergy() {
-    const energyElement = document.querySelector('#root > div._wrapper_1cplp_1 > div > footer > div._info_16i6o_10._footerInfo_16i6o_41 > div > div > div > div > span:nth-child(1)');
+    const energyElement = document.querySelector("#root > div._wrapper_1cplp_1 > div > footer > div._info_1qcl4_10._footerInfo_1qcl4_41 > div > div > div > div > span:nth-child(1)");
     if (energyElement) {
         let energyText = energyElement.textContent.replace(/\s/g, '').trim();
         // Thay thế dấu chấm hoặc dấu phẩy bằng chuỗi rỗng
@@ -52,7 +52,7 @@ function autoclicker() {
             triggerEvent(element, 'mouseup', coordinates);
             triggerEvent(element, 'click', coordinates);
 
-            const randomDelay = getRandomInt(80, 120);
+            const randomDelay = getRandomInt(60, 80);
             setTimeout(autoclicker, randomDelay);
         }
     } else {

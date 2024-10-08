@@ -11,6 +11,8 @@
 (function() {
     'use strict';
 
+    const reloadInterval = 15 * 60 * 1000; // 15 phút (miligiây)
+
     console.log('Bums Autoclicker: Script đã được khởi chạy');
 
     function getRandomInt(min, max) {
@@ -19,50 +21,32 @@
 
     function getCurrentEnergy() {
         const energyElement = document.querySelector("#app > div.page-container > div > div > div.footer-view.power-value > span > div > div > div.tap_power_val.text_bold");
-        
-        if (!energyElement) {
-            console.log("Không tìm thấy phần tử energyElement, tạm dừng trong 20 giây");
-            return 0; // Trả về giá trị 0 nếu không tìm thấy phần tử
-        }
-        
         const content = energyElement.textContent.split('/');
         return content ? parseInt(content[0].trim()) : 0;
     }
 
     function findClickerElement() {
-        return document.querySelector("#app > div.page-container > div > div > div.content > div.avatar");
+        return document.querySelector("body > div.layout_layout__sx_l_ > div > div > div > div.Clicker_game__zqXSN > div.Clicker_gameContent__aycT2 > div > canvas");
     }
 
     function autoclicker() {
         const currentEnergy = getCurrentEnergy();
         if (currentEnergy < 1000) {
-            const pauseDuration = getRandomInt(200, 300) * 1000;
+            const pauseDuration = getRandomInt(300, 600) * 1000;
             console.log(`Bums Autoclicker: Năng lượng thấp (${currentEnergy}), tạm dừng trong ${pauseDuration / 1000} giây`);
             setTimeout(autoclicker, pauseDuration);
-            return;
         } else {
-            const element = findClickerElement();
-            
-            if (element) {
-                const coordinates = getRandomCoordinates(element);
-                triggerClickEvent('touchstart', element, coordinates);
-                triggerClickEvent('touchend', element, coordinates);
-                const randomDelay = getRandomInt(100, 200);
-                setTimeout(autoclicker, randomDelay);
-            } else {
-                console.log(`Không tìm thấy phần từ để click tạm dựng trong 20s`);
-                const randomDelayNotElement = getRandomInt(20000, 30000) * 1000;
-                setTimeout(autoclicker, randomDelayNotElement);
-                return;
-            }
-        }
-    }
+            const coordinates = getCenterCoordinates();
+            const element = document.elementFromPoint(coordinates.x, coordinates.y); // Get the element at the center
 
-    function getRandomCoordinates(element) {
-        const rect = element.getBoundingClientRect();
-        const x = getRandomInt(rect.left, rect.right);
-        const y = getRandomInt(rect.top, rect.bottom);
-        return { x, y };
+            if (element) {
+                triggerClickEvent('touchstart', element, coordinates);
+                // triggerClickEvent('touchend', element, coordinates);
+            }
+
+            const randomDelay = getRandomInt(200, 300);
+            setTimeout(autoclicker, randomDelay);
+        }
     }
 
     function triggerClickEvent(type, element, coordinates) {
@@ -115,11 +99,19 @@
         return { x, y };
     }
 
+    // Hàm tự động tải lại trang mỗi 15 phút
+    function autoReload() {
+        console.log('Đang tải lại trang...');
+        location.reload();
+    }
+
     function initializeScript() {
         console.log('Bums Autoclicker đã được khởi chạy');
         setTimeout(() => {
             autoclicker();
         }, 5000);
+
+        setInterval(autoReload, reloadInterval);
     }
 
     initializeScript();
