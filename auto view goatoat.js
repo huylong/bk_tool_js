@@ -59,8 +59,12 @@
 
             await this.triggerMouseEvent('click', this.element);
 
-            const repeatDelay  = this.getRandomInterval(100, 110) * 1000; // Nghỉ ngẫu nhiên 100 toi 110
+            var repeatDelay  = this.getRandomInterval(120, 130) * 1000; // Nghỉ ngẫu nhiên 100 toi 110
 
+            if (this.numberClick > 10) {
+                repeatDelay  = this.getRandomInterval(5, 7) * 1000 * 60;
+                this.numberClick = 0;
+            }
             // Gọi lại hàm start để thực hiện auto click lặp lại
             this.intervalId = setTimeout(() => {
                 this.start(); // Lặp lại quá trình auto click

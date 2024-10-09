@@ -11,7 +11,7 @@
 (function() {
     'use strict';
 
-    const reloadInterval = 15 * 60 * 1000; // 15 phút (miligiây)
+    const reloadInterval = 60 * 60 * 1000; // 15 phút (miligiây)
 
     console.log('Bums Autoclicker: Script đã được khởi chạy');
 
@@ -29,6 +29,11 @@
         return document.querySelector("body > div.layout_layout__sx_l_ > div > div > div > div.Clicker_game__zqXSN > div.Clicker_gameContent__aycT2 > div > canvas");
     }
 
+
+    function checkClaimToken() {
+        return document.querySelector("body > div.van-popup.van-popup--bottom.mine-offline-popup.van-safe-area-bottom > div > button");
+    }
+
     function autoclicker() {
         const currentEnergy = getCurrentEnergy();
         if (currentEnergy < 1000) {
@@ -38,6 +43,14 @@
         } else {
             const coordinates = getCenterCoordinates();
             const element = document.elementFromPoint(coordinates.x, coordinates.y); // Get the element at the center
+
+            const getClaimToken = checkClaimToken();
+            
+            if (getClaimToken) {
+                console.log(`click checkClaimAds`);
+                triggerClickEvent('touchstart', getClaimToken);
+                triggerClickEvent('touchend', getClaimToken);
+            }
 
             if (element) {
                 triggerClickEvent('touchstart', element, coordinates);

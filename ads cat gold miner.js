@@ -149,10 +149,10 @@ const clicker = new AutoClicker("GameCanvas");
 
 // Hàm chính để thực hiện các hành động
 async function main() {
-    await clicker.start(324, 223); // Click đầu tiên
-    await clicker.sleep(25, 30); // Chờ từ 1 đến 3 giây
-    await clicker.start(190, 532); // Click thứ hai
+    await clicker.start(300, 213); // Click đầu tiên
+    await clicker.sleep(20, 25); // Chờ từ 1 đến 3 giây
     await clicker.sleep(1, 2); // Chờ từ 1 đến 3 giây
+    await clicker.start(185, 448); // Click thứ hai
 }
 // Gọi hàm chính
 clicker.startAutoClicking();

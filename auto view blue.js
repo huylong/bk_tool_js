@@ -34,8 +34,8 @@
 
         // Hàm để kích hoạt sự kiện chuột với khoảng nghỉ ngẫu nhiên
         async triggerMouseEvent(type, element) {
-            const randomDelay = this.getRandomInterval(1, 2) * 1000; // Nghỉ ngẫu nhiên từ 1-3 giây
-            console.log(`Đang đợi ${randomDelay / 1000} giây trước khi click...`);
+            const randomDelay = this.getRandomInterval(1, 2) * 100; // Nghỉ ngẫu nhiên từ 1-2 giây
+            console.log(`Đang đợi ${randomDelay / 10000} giây trước khi click...`);
 
             await this.sleep(randomDelay); // Đợi ngẫu nhiên trước khi click
 
@@ -73,10 +73,16 @@
                 await this.triggerMouseEvent('click', checkAds);
             }
 
+            var repeatDelay  = this.getRandomInterval(21, 24) * 1000; // Nghỉ ngẫu nhiên 35 toi 40
             await this.triggerMouseEvent('click', this.element);
-            await this.sleepRandomTime(25, 30) * 1000; // Nghỉ ngẫu nhiên 22 toi 25s truoc khi nhan claim
+            await this.sleepRandomTime(16, 20) * 1000; // Nghỉ ngẫu nhiên 16 toi 25s truoc khi nhan claim
             await this.triggerMouseEvent('click', this.element);
-            const repeatDelay  = this.getRandomInterval(66, 80) * 1000; // Nghỉ ngẫu nhiên 20s toi 30s
+
+            if (this.numberClick > 30) {
+                repeatDelay  = this.getRandomInterval(3, 5) * 1000 * 60;
+                this.numberClick = 0;
+            }
+
             // Gọi lại hàm start để thực hiện auto click lặp lại
             this.intervalId = setTimeout(() => {
                 this.start(); // Lặp lại quá trình auto click
@@ -168,7 +174,7 @@
     startButton.addEventListener('click', () => {
         console.log("Button được nhấn, bắt đầu AutoClicker...");
         simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
-        clicker = new AutoClicker("#root > div._outlet_10ukh_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
+        clicker = new AutoClicker("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
         clicker.start(); // Bắt đầu AutoClicker mới
     });
 

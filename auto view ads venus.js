@@ -237,7 +237,7 @@
             console.log("Trang đã được reload, khởi động lại hành động...");
             simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
             localStorage.removeItem('autoClickerActive'); // Xóa trạng thái
-            clicker = new AutoClicker("#root > div._wrapper_gesw3_1 > div._scroll_15ap5_1 > div:nth-child(4) > div:nth-child(1) > div:nth-child(1)");
+            clicker = new AutoClicker("#root > div._wrapper_gesw3_1 > div._scroll_15ap5_1 > div:nth-child(6) > div:nth-child(1) > div:nth-child(1)");
             clicker.performPostReloadActions(); // Thực hiện các hành động sau khi tải lại
         });
     }
