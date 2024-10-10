@@ -84,7 +84,7 @@ class AutoClicker {
     startAutoClicking() {
         const callMain = () => {
             main(); // Gọi hàm chính
-            const waitTime = 16000; // Thời gian ngẫu nhiên từ 4 đến 8 phút
+            const waitTime = this.sleep(18, 20); // Thời gian ngẫu nhiên từ 4 đến 8 phút
             this.intervalId = setTimeout(callMain, waitTime); // Đặt lại setTimeout với thời gian mới
         };
 
@@ -150,8 +150,7 @@ const clicker = new AutoClicker("GameCanvas");
 // Hàm chính để thực hiện các hành động
 async function main() {
     await clicker.start(300, 213); // Click đầu tiên
-    await clicker.sleep(20, 25); // Chờ từ 1 đến 3 giây
-    await clicker.sleep(1, 2); // Chờ từ 1 đến 3 giây
+    await clicker.sleep(16, 18); // Chờ từ 1 đến 3 giây
     await clicker.start(185, 448); // Click thứ hai
 }
 // Gọi hàm chính
