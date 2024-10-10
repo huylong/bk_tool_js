@@ -90,30 +90,33 @@
 
         async main(callsCount) {
             for (let i = 0; i < callsCount; i++) {
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(288, 266);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(206, 268);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(208, 226);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(182, 249);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(205, 220);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(196, 240);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(208, 226);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
                 await this.start(288, 266);
-                await this.sleep2(40, 60);
+                await this.sleep2(20, 40);
+                await this.start(205, 220);
+                await this.sleep2(20, 40);
+                await this.start(188, 493);
 
                 console.log(`Lần thứ ${i + 1} đã thực hiện.`);
             }
         }
 
         startAutoClicking() {
-            this.main(76);
+            this.main(60);
         }
 
         schedulePageReload() {
@@ -174,7 +177,7 @@
         setTimeout(() => {
             const clicker = new AutoClicker("unity-canvas");
             clicker.startAutoClicking();
-        }, 10000); // Chạy sau 10000ms, tức là 10 giây
+        }, 15000); // Chạy sau 15000ms, tức là 15 giây
     });
 
 })();
