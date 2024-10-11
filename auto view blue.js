@@ -66,13 +66,15 @@
                 await this.sleep(this.getRandomInterval(16000, 18000));
 
                 const checkAds = this.checkClaimAds();
+
                 if (checkAds) {
                     await this.triggerMouseEvent('click', checkAds);
                 }
 
-                await this.sleep(this.getRandomInterval(1000, 1000));
+                await this.sleep(this.getRandomInterval(1000, 2000));
 
                 const claimAdsNow = this.claimAds();
+                
                 if (claimAdsNow) {
                     console.log(`Claim ads lần thứ ${this.numberClick}`);
                     await this.triggerMouseEvent('click', claimAdsNow);
@@ -85,9 +87,9 @@
                 }
 
                 this.numberClick++;
-                const delay = this.getRandomInterval(19000, 21000);
-                console.log(`Đợi ${delay / 1000} giây trước khi tiếp tục...`);
-                await this.sleep(delay);
+
+                await this.sleep(this.getRandomInterval(2000, 3000));
+
             }
         }
 
