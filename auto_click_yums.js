@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         AutoClicker with AutoReload
-// @version      1.0
+// @version      1.2
 // @description  Tự động click và tải lại trang sau khoảng 35 đến 45 phút
 // @match        https://game.yumparty.com/*
 // @icon         https://cdn0.iconfinder.com/data/icons/kameleon-free-pack-rounded/110/Candy-64.png
@@ -15,8 +15,9 @@
         constructor(selector) {
             this.element = document.getElementById(selector);
             this.intervalId = null;
+            this.isRunning = false; // Cờ để theo dõi trạng thái chạy
             this.simulateTabVisibilityAndFocus();
-            this.schedulePageReload(); // Đặt lịch tự động tải lại trang
+            this.schedulePageReload();
         }
 
         triggerMouseEvent(type, x, y) {
@@ -39,15 +40,12 @@
                 force: 1,
                 radiusX: 1,
                 radiusY: 1,
-                rotationAngle: 0,
-                altitudeAngle: 0,
-                azimuthAngle: 0
+                rotationAngle: 0
             });
 
             const touchEvent = new TouchEvent(type, {
                 bubbles: true,
                 cancelable: true,
-                view: window,
                 touches: [touch],
                 targetTouches: [touch],
                 changedTouches: [touch]
@@ -62,16 +60,16 @@
                 return;
             }
 
+            if (!this.isRunning) {
+                return; // Nếu AutoClicker đã dừng, không click nữa
+            }
+
             this.triggerTouchEvent('touchstart', x, y);
             this.triggerTouchEvent('touchend', x, y);
         }
 
         stop() {
-            if (this.intervalId) {
-                clearInterval(this.intervalId);
-                this.intervalId = null;
-                console.log('Tự động click đã dừng lại.');
-            }
+            this.isRunning = false;
         }
 
         sleep(min, max) {
@@ -89,7 +87,20 @@
         }
 
         async main(callsCount) {
+            this.isRunning = true;
+
+            await this.sleep2(500, 1000);
+            await this.start(186, 585);
+            await this.sleep2(100, 200);
+            await this.start(186, 585);
+
             for (let i = 0; i < callsCount; i++) {
+                if (!this.isRunning) {
+                    console.log('Đã dừng tự động click.');
+                    break;
+                }
+
+                await this.start(205, 210);
                 await this.sleep2(20, 40);
                 await this.start(288, 266);
                 await this.sleep2(20, 40);
@@ -105,7 +116,11 @@
                 await this.sleep2(20, 40);
                 await this.start(208, 226);
                 await this.sleep2(20, 40);
-                await this.start(288, 266);
+                await this.start(196, 240);
+                await this.sleep2(20, 40);
+                await this.start(205, 225);
+                await this.sleep2(20, 40);
+                await this.start(196, 256);
                 await this.sleep2(20, 40);
                 await this.start(205, 220);
                 await this.sleep2(20, 40);
@@ -115,12 +130,18 @@
             }
         }
 
+        async reFill() {
+            await this.sleep2(20, 40);
+            this.isRunning = true; // Đảm bảo cờ isRunning được bật
+            await this.start(190, 460);
+        }
+
         startAutoClicking() {
-            this.main(60);
+            this.main(70);
         }
 
         schedulePageReload() {
-            const reloadInterval = this.getRandomInterval(36, 40) * 60 * 1000;
+            const reloadInterval = this.getRandomInterval(30, 35) * 60 * 1000;
             console.log(`Trang sẽ tự động tải lại sau ${reloadInterval / 60 / 1000} phút.`);
             setTimeout(() => {
                 console.log('Đang tải lại trang...');
@@ -174,10 +195,75 @@
     }
 
     window.addEventListener('load', () => {
-        setTimeout(() => {
-            const clicker = new AutoClicker("unity-canvas");
+        const clicker = new AutoClicker("unity-canvas");
+
+        // Tạo nút Start
+        const startButton = document.createElement('button');
+        startButton.innerText = "Start";
+        startButton.style.position = 'fixed';
+        startButton.style.top = '22%';
+        startButton.style.right = '17%';
+        startButton.style.zIndex = '9999';
+        startButton.style.padding = '6px';
+        startButton.style.backgroundColor = '#28a745';
+        startButton.style.color = '#fff';
+        startButton.style.border = 'none';
+        startButton.style.borderRadius = '5px';
+        startButton.style.cursor = 'pointer';
+        document.body.appendChild(startButton);
+
+        // Tạo nút Stop
+        const stopButton = document.createElement('button');
+        stopButton.innerText = "Stop";
+        stopButton.style.position = 'fixed';
+        stopButton.style.top = '22%';
+        stopButton.style.right = '30%';
+        stopButton.style.zIndex = '9999';
+        stopButton.style.padding = '6px';
+        stopButton.style.backgroundColor = '#dc3545';
+        stopButton.style.color = '#fff';
+        stopButton.style.border = 'none';
+        stopButton.style.borderRadius = '5px';
+        stopButton.style.cursor = 'pointer';
+        document.body.appendChild(stopButton);
+
+        // Tạo nút Refill
+        const reFillButton = document.createElement('button');
+        reFillButton.innerText = "Ref";
+        reFillButton.style.position = 'fixed';
+        reFillButton.style.top = '22%';
+        reFillButton.style.right = '6%';
+        reFillButton.style.zIndex = '9999';
+        reFillButton.style.padding = '6px';
+        reFillButton.style.backgroundColor = '#FF7F50';
+        reFillButton.style.color = '#fff';
+        reFillButton.style.border = 'none';
+        reFillButton.style.borderRadius = '5px';
+        reFillButton.style.cursor = 'pointer';
+        document.body.appendChild(reFillButton);
+
+        // Sự kiện click cho nút Start
+        startButton.addEventListener('click', () => {
+            console.log("Tự động click bắt đầu...");
             clicker.startAutoClicking();
-        }, 15000); // Chạy sau 15000ms, tức là 15 giây
+        });
+
+        // Sự kiện click cho nút Refill
+        stopButton.addEventListener('click', () => {
+            console.log("Tự động click đã dừng lại.");
+            clicker.stop();
+        });
+
+        // Sự kiện click cho nút Stop
+        reFillButton.addEventListener('click', () => {
+            console.log("Click reFill.");
+            clicker.reFill();
+        });
+
+        setTimeout(() => {
+            clicker.startAutoClicking();
+            console.log("Chương trình tự động click sẽ chạy sau 15 giây...");
+        }, 15000);
     });
 
 })();
