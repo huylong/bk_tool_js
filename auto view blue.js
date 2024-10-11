@@ -15,7 +15,7 @@
         constructor(selector) {
             this.selector = selector;
             this.element = document.querySelector(selector);
-            this.intervalId = null;
+            this.isRunning = false;
             this.numberClick = 1;
         }
 
@@ -25,24 +25,19 @@
         }
 
         checkClaimAds() {
-            const energyElement = document.querySelector("#root > div._container_1krht_1._container_dc403_1.white-box > button");
-            if (energyElement) {
-                return energyElement;
-            }
-            return false;
+            return document.querySelector("#root > div._container_1krht_1._container_dc403_1.white-box > button");
+        }
+
+        claimAds() {
+            return document.querySelector("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
         }
 
         // Hàm để kích hoạt sự kiện chuột với khoảng nghỉ ngẫu nhiên
         async triggerMouseEvent(type, element) {
-            const randomDelay = this.getRandomInterval(1, 2) * 100; // Nghỉ ngẫu nhiên từ 1-2 giây
-            console.log(`Đang đợi ${randomDelay / 10000} giây trước khi click...`);
-
-            await this.sleep(randomDelay); // Đợi ngẫu nhiên trước khi click
-
             const rect = element.getBoundingClientRect();
             const coordinates = {
-                x: rect.left + (rect.width / 2), // Tọa độ X giữa phần tử
-                y: rect.top + (rect.height / 2)  // Tọa độ Y giữa phần tử
+                x: rect.left + (rect.width / 2),
+                y: rect.top + (rect.height / 2)
             };
 
             const mouseEvent = new MouseEvent(type, {
@@ -57,151 +52,129 @@
 
         // Hàm để bắt đầu tự động click
         async start() {
-            console.log("Tự động click bắt đầu...");
+            this.isRunning = true;
+            while (this.isRunning) {
+                this.element = document.querySelector(this.selector);
+                if (!this.element) {
+                    console.error('Không tìm thấy phần tử!');
+                    return;
+                }
 
-            this.element = document.querySelector(this.selector);
-            if (!this.element) {
-                console.log('Không tìm thấy phần tử!');
-                return;
+                console.log(`Click ads lần thứ ${this.numberClick}`);
+
+                await this.triggerMouseEvent('click', this.element);
+                await this.sleep(this.getRandomInterval(16000, 18000));
+
+                const checkAds = this.checkClaimAds();
+                if (checkAds) {
+                    await this.triggerMouseEvent('click', checkAds);
+                }
+
+                await this.sleep(this.getRandomInterval(1000, 1000));
+
+                const claimAdsNow = this.claimAds();
+                if (claimAdsNow) {
+                    console.log(`Claim ads lần thứ ${this.numberClick}`);
+                    await this.triggerMouseEvent('click', claimAdsNow);
+                }
+
+                if (this.numberClick > 50) {
+                    console.log('30 lần click rồi phải nghỉ 5 phút');
+                    await this.sleep(5 * 60 * 1000); // Nghỉ 5 phút
+                    this.numberClick = 0;
+                }
+
+                this.numberClick++;
+                const delay = this.getRandomInterval(19000, 21000);
+                console.log(`Đợi ${delay / 1000} giây trước khi tiếp tục...`);
+                await this.sleep(delay);
             }
-
-            console.log('Click ads lần thứ ' + this.numberClick);
-
-            const checkAds = this.checkClaimAds();
-
-            if (checkAds) {
-                await this.triggerMouseEvent('click', checkAds);
-            }
-
-            var repeatDelay  = this.getRandomInterval(21, 24) * 1000; // Nghỉ ngẫu nhiên 35 toi 40
-            await this.triggerMouseEvent('click', this.element);
-            await this.sleepRandomTime(16, 20) * 1000; // Nghỉ ngẫu nhiên 16 toi 25s truoc khi nhan claim
-            await this.triggerMouseEvent('click', this.element);
-
-            if (this.numberClick > 30) {
-                repeatDelay  = this.getRandomInterval(3, 5) * 1000 * 60;
-                this.numberClick = 0;
-            }
-
-            // Gọi lại hàm start để thực hiện auto click lặp lại
-            this.intervalId = setTimeout(() => {
-                this.start(); // Lặp lại quá trình auto click
-            }, repeatDelay);
-
-            this.numberClick++;
         }
-
-        
 
         // Hàm để dừng tự động click
         stop() {
-            if (this.intervalId) {
-                clearTimeout(this.intervalId); // Dừng thời gian chạy của setTimeout
-                this.intervalId = null;
-                console.log('Tự động click đã dừng lại.');
-            }
+            this.isRunning = false;
+            console.info('Tự động click đã dừng lại.');
         }
 
-        // Hàm để lấy thời gian ngẫu nhiên giữa min và max giây
+        // Hàm để lấy thời gian ngẫu nhiên giữa min và max mili giây
         getRandomInterval(min, max) {
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
-
-        sleepRandomTime(minSeconds = 2, maxSeconds = 4) {
-            const randomTime = Math.random() * (maxSeconds - minSeconds) + minSeconds;
-            return new Promise(resolve => setTimeout(resolve, randomTime * 1000));
-          }
     }
 
     // Hàm giả lập document luôn ở trạng thái "visible" và window luôn được focus
     function simulateTabVisibilityAndFocus() {
-        // Giả lập document luôn ở trạng thái visible
         Object.defineProperty(document, 'visibilityState', {
             configurable: true,
-            get: function() {
-                return 'visible'; // Trả về 'visible' để tab luôn ở trạng thái visible
-            }
+            get: () => 'visible',
         });
 
         Object.defineProperty(document, 'hidden', {
             configurable: true,
-            get: function() {
-                return false; // Trả về false để báo hiệu rằng tab không bị ẩn
-            }
+            get: () => false,
         });
 
-        // Chặn sự kiện visibilitychange để nó không kích hoạt khi tab bị ẩn
-        document.addEventListener('visibilitychange', function(event) {
-            event.stopImmediatePropagation(); // Ngăn sự kiện 'visibilitychange'
+        document.addEventListener('visibilitychange', (event) => {
+            event.stopImmediatePropagation();
         }, true);
 
-        // Giả lập sự kiện focus để tab luôn giữ focus
-        window.addEventListener('blur', function(event) {
-            // Khi tab bị blur, ngay lập tức làm nó focus lại
+        window.addEventListener('blur', () => {
             window.focus();
             console.log('Tab đã bị blur, focus lại ngay.');
         }, true);
 
-        // Giả lập window luôn được focus
         Object.defineProperty(document, 'hasFocus', {
             configurable: true,
-            get: function() {
-                return function() {
-                    return true; // Luôn trả về true để báo hiệu tab luôn focus
-                };
-            }
+            get: () => () => true,
         });
     }
-
-    // Khởi tạo đối tượng AutoClicker
-    let clicker = null;
 
     // Thêm button vào cuối body
     const startButton = document.createElement('button');
     startButton.innerText = "Start Ads";
-    startButton.style.position = 'fixed';
-    startButton.style.bottom = '10px';
-    startButton.style.right = '10px';
-    startButton.style.zIndex = '9999';
-    startButton.style.padding = '10px';
-    startButton.style.backgroundColor = '#28a745';
-    startButton.style.color = '#fff';
-    startButton.style.border = 'none';
-    startButton.style.borderRadius = '5px';
-    startButton.style.cursor = 'pointer';
-
-    // Gắn sự kiện click cho button để bắt đầu AutoClicker và giả lập visibility + focus
-    startButton.addEventListener('click', () => {
-        console.log("Button được nhấn, bắt đầu AutoClicker...");
-        simulateTabVisibilityAndFocus(); // Gọi hàm giả lập trạng thái tab visible và focus
-        clicker = new AutoClicker("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
-        clicker.start(); // Bắt đầu AutoClicker mới
+    Object.assign(startButton.style, {
+        position: 'fixed',
+        bottom: '10px',
+        right: '10px',
+        zIndex: '9999',
+        padding: '10px',
+        backgroundColor: '#28a745',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer'
     });
 
-    // Thêm button xóa trạng thái AutoClicker
+    startButton.addEventListener('click', () => {
+        console.info('Button được nhấn, bắt đầu AutoClicker...');
+        simulateTabVisibilityAndFocus();
+        const clicker = new AutoClicker("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
+        clicker.start();
+    });
+
     const clearButton = document.createElement('button');
     clearButton.innerText = "Clear";
-    clearButton.style.position = 'fixed';
-    clearButton.style.bottom = '10px';
-    clearButton.style.left = '10px';
-    clearButton.style.zIndex = '9999';
-    clearButton.style.padding = '10px';
-    clearButton.style.backgroundColor = '#dc3545';
-    clearButton.style.color = '#fff';
-    clearButton.style.border = 'none';
-    clearButton.style.borderRadius = '5px';
-    clearButton.style.cursor = 'pointer';
+    Object.assign(clearButton.style, {
+        position: 'fixed',
+        bottom: '10px',
+        left: '10px',
+        zIndex: '9999',
+        padding: '10px',
+        backgroundColor: '#dc3545',
+        color: '#fff',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer'
+    });
 
-    // Gắn sự kiện click cho button xóa trạng thái
     clearButton.addEventListener('click', () => {
-        console.log("Button được nhấn, dừng AutoClicker...");
+        console.info('Button được nhấn, dừng AutoClicker...');
         if (clicker) {
-            clicker.stop(); // Gọi hàm dừng lại AutoClicker
+            clicker.stop();
         }
     });
 
-    // Thêm button vào body
     document.body.appendChild(startButton);
     document.body.appendChild(clearButton);
-
 })();
