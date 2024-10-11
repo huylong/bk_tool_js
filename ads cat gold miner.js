@@ -1,7 +1,7 @@
 class AutoClicker {
     constructor(selector) {
         this.element = document.getElementById(selector);
-        this.intervalId = null; // Biến để lưu trữ ID của setInterval
+        this.isRunning = false;
         this.simulateTabVisibilityAndFocus();
     }
 
@@ -18,34 +18,6 @@ class AutoClicker {
         console.log(`${type} chuột được kích hoạt tại (${x}, ${y}).`);
     }
 
-    // Hàm để kích hoạt sự kiện cảm ứng
-    triggerTouchEvent(type, x, y) {
-        const touch = new Touch({
-            identifier: Date.now(), // Mã định danh duy nhất
-            target: this.element,
-            clientX: x,
-            clientY: y,
-            force: 1,
-            radiusX: 1,
-            radiusY: 1,
-            rotationAngle: 0,
-            altitudeAngle: 0,
-            azimuthAngle: 0
-        });
-
-        const touchEvent = new TouchEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            view: window,
-            touches: [touch],
-            targetTouches: [touch],
-            changedTouches: [touch]
-        });
-
-        this.element.dispatchEvent(touchEvent);
-        console.log(`${type} cảm ứng được kích hoạt tại (${x}, ${y}).`);
-    }
-
     // Hàm để bắt đầu tự động click
     async start(x, y) {
         if (!this.element) {
@@ -53,21 +25,15 @@ class AutoClicker {
             return;
         }
 
-        // // Kích hoạt các sự kiện một lần
-        // this.triggerMouseEvent('click', x, y);
-        // this.triggerTouchEvent('touchstart', x, y);
-        // this.triggerTouchEvent('touchend', x, y);
+        // Kích hoạt các sự kiện
         this.triggerMouseEvent('mousedown', x, y);
         this.triggerMouseEvent('mouseup', x, y);
     }
 
     // Hàm để dừng tự động click
     stop() {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
-            console.log('Tự động click đã dừng lại.');
-        }
+        this.isRunning = false;
+        console.log('Tự động click đã dừng lại.');
     }
 
     // Hàm để chờ một khoảng thời gian ngẫu nhiên
@@ -81,14 +47,15 @@ class AutoClicker {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 
-    startAutoClicking() {
-        const callMain = () => {
-            main(); // Gọi hàm chính
-            const waitTime = this.sleep(18, 20); // Thời gian ngẫu nhiên từ 4 đến 8 phút
-            this.intervalId = setTimeout(callMain, waitTime); // Đặt lại setTimeout với thời gian mới
-        };
-
-        callMain(); // Gọi lần đầu tiên
+    // Hàm để bắt đầu auto click theo khoảng thời gian ngẫu nhiên
+    async startAutoClicking() {
+        this.isRunning = true;
+        while (this.isRunning) {
+            await main(); // Gọi hàm chính và đợi nó hoàn thành
+            const waitTime = this.getRandomInterval(1, 2); // Thời gian ngẫu nhiên từ 35 đến 45 phút
+            console.log(`Chờ ${waitTime} giây trước khi thực hiện lần tiếp theo.`);
+            await this.sleep(waitTime, waitTime); // Đợi trước khi gọi lại main
+        }
     }
 
     simulateTabVisibilityAndFocus() {
@@ -145,15 +112,14 @@ class AutoClicker {
 // Sử dụng lớp AutoClicker
 const clicker = new AutoClicker("GameCanvas");
 
-// Iphone 14 Pro Max 100%
-
 // Hàm chính để thực hiện các hành động
 async function main() {
     await clicker.start(300, 213); // Click đầu tiên
-    await clicker.sleep(16, 18); // Chờ từ 1 đến 3 giây
+    await clicker.sleep(19, 21); // Chờ từ 19 đến 21 giây
     await clicker.start(185, 448); // Click thứ hai
 }
-// Gọi hàm chính
+
+// Gọi hàm auto click
 clicker.startAutoClicking();
 
 // Để dừng tự động click, bạn có thể gọi:
