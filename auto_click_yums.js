@@ -146,10 +146,11 @@
             setTimeout(() => {
                 console.log('Đang tải lại trang...');
                 location.reload();
-            }, reloadInterval);
+            }, reloadInterval); 
         }
 
         simulateTabVisibilityAndFocus() {
+            // Giả lập thuộc tính visibilityState luôn là 'visible'
             Object.defineProperty(document, 'visibilityState', {
                 configurable: true,
                 enumerable: true,
@@ -157,7 +158,8 @@
                     return 'visible';
                 }
             });
-
+        
+            // Giả lập thuộc tính hidden luôn là false
             Object.defineProperty(document, 'hidden', {
                 configurable: true,
                 enumerable: true,
@@ -165,32 +167,55 @@
                     return false;
                 }
             });
-
-            document.addEventListener('visibilitychange', function(event) {
-                event.stopImmediatePropagation();
-            }, true);
-
-            window.addEventListener('blur', (event) => {
-                window.focus();
-                console.log('Tab đã bị blur, focus lại ngay.');
-            }, true);
-
-            window.addEventListener('focus', () => {
-                console.log('Tab đã được focus.');
-            });
-
+        
+            // Giả lập thuộc tính hasFocus() luôn trả về true
             Object.defineProperty(document, 'hasFocus', {
                 configurable: true,
                 enumerable: true,
+                writable: true,
                 value: function() {
                     return true;
                 }
             });
-
+        
+            // Chặn sự kiện visibilitychange để ngăn các script khác thay đổi trạng thái visibility
+            document.addEventListener('visibilitychange', function(event) {
+                event.stopImmediatePropagation();
+            }, true);
+        
+            // Xử lý sự kiện blur và focus lại tab ngay lập tức nếu nó bị mất focus
+            window.addEventListener('blur', (event) => {
+                setTimeout(() => {
+                    window.focus();
+                    console.log('Tab đã bị blur, focus lại ngay.');
+                }, 10);
+            }, true);
+        
+            // Log khi tab được focus
+            window.addEventListener('focus', () => {
+                console.log('Tab đã được focus.');
+            });
+        
+            // Giữ cho tab luôn hoạt động bằng cách sử dụng requestAnimationFrame
             const fakeAnimation = () => {
                 window.requestAnimationFrame(fakeAnimation);
             };
             window.requestAnimationFrame(fakeAnimation);
+        
+            // Tạo một sự kiện giả để thông báo rằng tab vẫn đang được focus
+            setInterval(() => {
+                const focusEvent = new Event('focus');
+                window.dispatchEvent(focusEvent);
+            }, 10000); // Gửi sự kiện focus mỗi 10 giây
+        
+            // Đoạn mã giữ kết nối, cập nhật Service Worker mỗi 30 giây
+            setInterval(() => {
+                navigator.serviceWorker.getRegistrations().then(registrations => {
+                    for (let registration of registrations) {
+                        registration.update();
+                    }
+                });
+            }, 30000); // Cập nhật Service Worker mỗi 30 giây
         }
     }
 
