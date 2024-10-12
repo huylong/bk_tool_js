@@ -32,6 +32,10 @@
             return document.querySelector("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
         }
 
+        popupError() {
+            return document.querySelector("body > div.popup.popup-peer.popup-confirmation.active > div > div.popup-buttons > button > span");
+        }
+
         // Hàm để kích hoạt sự kiện chuột với khoảng nghỉ ngẫu nhiên
         async triggerMouseEvent(type, element) {
             const rect = element.getBoundingClientRect();
@@ -65,13 +69,22 @@
                 await this.triggerMouseEvent('click', this.element);
                 await this.sleep(this.getRandomInterval(16000, 18000));
 
+                await this.sleep(this.getRandomInterval(500, 1000));
+                const checkPopupError = this.popupError();
+
+                if (checkPopupError) {
+                    await this.triggerMouseEvent('click', checkPopupError);
+                }
+
+                await this.sleep(this.getRandomInterval(500, 1000));
+
                 const checkAds = this.checkClaimAds();
 
                 if (checkAds) {
                     await this.triggerMouseEvent('click', checkAds);
                 }
 
-                await this.sleep(this.getRandomInterval(1000, 2000));
+                await this.sleep(this.getRandomInterval(500, 1000));
 
                 const claimAdsNow = this.claimAds();
                 
@@ -81,7 +94,7 @@
                 }
 
                 if (this.numberClick > 50) {
-                    console.log('30 lần click rồi phải nghỉ 5 phút');
+                    console.log('50 lần click rồi phải nghỉ 5 phút');
                     await this.sleep(5 * 60 * 1000); // Nghỉ 5 phút
                     this.numberClick = 0;
                 }
