@@ -34,7 +34,7 @@ function autoclicker() {
         const currentEnergy = getCurrentEnergy();
 
         if (currentEnergy < 25) {
-            const pauseDuration = getRandomInt(120, 180) * 1000;
+            const pauseDuration = getRandomInt(200, 300) * 1000;
             console.log(`1win Autoclicker: Năng lượng thấp (${currentEnergy}), tạm dừng trong ${pauseDuration / 1000} giây`);
             setTimeout(autoclicker, pauseDuration);
         } else {
@@ -48,7 +48,7 @@ function autoclicker() {
             triggerEvent(element, 'mouseup', coordinates);
             triggerEvent(element, 'click', coordinates);
 
-            const randomDelay = getRandomInt(40, 60);
+            const randomDelay = getRandomInt(60, 80);
             setTimeout(autoclicker, randomDelay);
         }
     } else {
@@ -87,7 +87,7 @@ function simulateTabVisibilityAndFocus() {
             return 'visible';
         }
     });
-  
+
     // Giả lập thuộc tính hidden luôn là false
     Object.defineProperty(document, 'hidden', {
         configurable: true,
@@ -96,7 +96,7 @@ function simulateTabVisibilityAndFocus() {
             return false;
         }
     });
-  
+
     // Giả lập thuộc tính hasFocus() luôn trả về true
     Object.defineProperty(document, 'hasFocus', {
         configurable: true,
@@ -106,12 +106,12 @@ function simulateTabVisibilityAndFocus() {
             return true;
         }
     });
-  
+
     // Chặn sự kiện visibilitychange để ngăn các script khác thay đổi trạng thái visibility
     document.addEventListener('visibilitychange', function(event) {
         event.stopImmediatePropagation();
     }, true);
-  
+
     // Xử lý sự kiện blur và focus lại tab ngay lập tức nếu nó bị mất focus
     window.addEventListener('blur', (event) => {
         setTimeout(() => {
@@ -119,24 +119,24 @@ function simulateTabVisibilityAndFocus() {
             console.log('Tab đã bị blur, focus lại ngay.');
         }, 10);
     }, true);
-  
+
     // Log khi tab được focus
     window.addEventListener('focus', () => {
         console.log('Tab đã được focus.');
     });
-  
+
     // Giữ cho tab luôn hoạt động bằng cách sử dụng requestAnimationFrame
     const fakeAnimation = () => {
         window.requestAnimationFrame(fakeAnimation);
     };
     window.requestAnimationFrame(fakeAnimation);
-  
+
     // Tạo một sự kiện giả để thông báo rằng tab vẫn đang được focus
     setInterval(() => {
         const focusEvent = new Event('focus');
         window.dispatchEvent(focusEvent);
     }, 10000); // Gửi sự kiện focus mỗi 10 giây
-  
+
     // Đoạn mã giữ kết nối, cập nhật Service Worker mỗi 30 giây
     setInterval(() => {
         navigator.serviceWorker.getRegistrations().then(registrations => {
