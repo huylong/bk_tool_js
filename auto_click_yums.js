@@ -89,7 +89,7 @@
         async main(callsCount) {
             this.isRunning = true;
 
-            await this.sleep2(500, 1000);
+            await this.sleep2(200, 500);
             await this.start(186, 585);
             await this.sleep2(100, 200);
             await this.start(186, 585);
@@ -101,34 +101,34 @@
                 }
 
                 await this.start(226, 258);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(216, 248);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(208, 226);
                 await this.start(205, 210);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(288, 266);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(206, 268);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(208, 226);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(182, 249);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(205, 220);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(196, 240);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(208, 226);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(196, 240);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(205, 225);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(196, 256);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(205, 220);
-                await this.sleep2(20, 40);
+                await this.sleep2(10, 20);
                 await this.start(188, 493);
 
                 console.log(`Lần thứ ${i + 1} đã thực hiện.`);
@@ -136,8 +136,8 @@
         }
 
         async reFill() {
-            await this.sleep2(20, 40);
             this.isRunning = true; // Đảm bảo cờ isRunning được bật
+            await this.sleep2(10, 20);
             await this.start(190, 460);
         }
 
