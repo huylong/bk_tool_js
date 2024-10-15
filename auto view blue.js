@@ -3,9 +3,9 @@
 // @namespace   Violentmonkey Scripts
 // @match       https://bluefarming.xyz/*
 // @grant       none
-// @version     1.2
+// @version     1.3
 // @author      -
-// @description 01:04:07 29/9/2024
+// @description Auto view ads on Blue Farming
 // ==/UserScript==
 
 (function() {
@@ -14,39 +14,24 @@
     class AutoClicker {
         constructor(selector) {
             this.selector = selector;
-            this.element = document.querySelector(selector);
             this.isRunning = false;
-            this.numberClick = 1;
+            this.clickCount = 0;
         }
 
-        // Hàm sleep để tạm dừng trong khoảng thời gian ngẫu nhiên
-        sleep(ms) {
+        static sleep(ms) {
             return new Promise(resolve => setTimeout(resolve, ms));
         }
 
-        checkClaimAds() {
-            return document.querySelector("#root > div._container_1krht_1._container_dc403_1.white-box > button");
+        static getRandomInterval(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        claimAds() {
-            return document.querySelector("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
-        }
-
-        popupError() {
-            return document.querySelector("body > div.popup.popup-peer.popup-confirmation.active > div > div.popup-buttons > button > span");
-        }
-
-        // Hàm để kích hoạt sự kiện chuột với khoảng nghỉ ngẫu nhiên
-        async triggerMouseEvent(type, element) {
+        static async triggerMouseEvent(type, element) {
+            if (!element) return;
             const rect = element.getBoundingClientRect();
-            const coordinates = {
-                x: rect.left + (rect.width / 2),
-                y: rect.top + (rect.height / 2)
-            };
-
             const mouseEvent = new MouseEvent(type, {
-                clientX: coordinates.x,
-                clientY: coordinates.y,
+                clientX: rect.left + (rect.width / 2),
+                clientY: rect.top + (rect.height / 2),
                 bubbles: true,
                 cancelable: true,
                 view: window
@@ -54,142 +39,141 @@
             element.dispatchEvent(mouseEvent);
         }
 
-        // Hàm để bắt đầu tự động click
-        async start() {
-            this.isRunning = true;
-            while (this.isRunning) {
-                this.element = document.querySelector(this.selector);
-                if (!this.element) {
-                    console.error('Không tìm thấy phần tử!');
-                    return;
-                }
+        getElement(selector) {
+            return document.querySelector(selector);
+        }
 
-                console.log(`Click ads lần thứ ${this.numberClick}`);
-
-                await this.triggerMouseEvent('click', this.element);
-                await this.sleep(this.getRandomInterval(16000, 18000));
-
-                await this.sleep(this.getRandomInterval(500, 1000));
-                const checkPopupError = this.popupError();
-
-                if (checkPopupError) {
-                    await this.triggerMouseEvent('click', checkPopupError);
-                }
-
-                await this.sleep(this.getRandomInterval(500, 1000));
-
-                const checkAds = this.checkClaimAds();
-
-                if (checkAds) {
-                    await this.triggerMouseEvent('click', checkAds);
-                }
-
-                await this.sleep(this.getRandomInterval(500, 1000));
-
-                const claimAdsNow = this.claimAds();
-                
-                if (claimAdsNow) {
-                    console.log(`Claim ads lần thứ ${this.numberClick}`);
-                    await this.triggerMouseEvent('click', claimAdsNow);
-                }
-
-                if (this.numberClick > 50) {
-                    console.log('50 lần click rồi phải nghỉ 5 phút');
-                    await this.sleep(5 * 60 * 1000); // Nghỉ 5 phút
-                    this.numberClick = 0;
-                }
-
-                this.numberClick++;
-
-                await this.sleep(this.getRandomInterval(2000, 3000));
-
+        async clickElement(selector) {
+            const element = this.getElement(selector);
+            if (element) {
+                await AutoClicker.triggerMouseEvent('click', element);
+                await AutoClicker.sleep(AutoClicker.getRandomInterval(500, 1000));
             }
         }
 
-        // Hàm để dừng tự động click
+        async start() {
+            this.isRunning = true;
+            while (this.isRunning) {
+                console.log(`Click ads lần thứ ${this.clickCount + 1}`);
+
+                await this.clickElement(this.selector);
+                await AutoClicker.sleep(AutoClicker.getRandomInterval(16000, 18000));
+
+                await this.clickElement("body > div.popup.popup-peer.popup-confirmation.active > div > div.popup-buttons > button > span");
+                await this.clickElement("#root > div._container_1krht_1._container_dc403_1.white-box > button");
+
+                const claimAdsButton = this.getElement("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
+                if (claimAdsButton) {
+                    console.log(`Claim ads lần thứ ${this.clickCount + 1}`);
+                    await AutoClicker.triggerMouseEvent('click', claimAdsButton);
+                }
+
+                this.clickCount++;
+
+                if (this.clickCount >= 50) {
+                    console.log('50 lần click rồi, nghỉ 5 phút');
+                    await AutoClicker.sleep(5 * 60 * 1000);
+                    this.clickCount = 0;
+                }
+
+                await AutoClicker.sleep(AutoClicker.getRandomInterval(2000, 3000));
+            }
+        }
+
         stop() {
             this.isRunning = false;
             console.info('Tự động click đã dừng lại.');
         }
+    }
 
-        // Hàm để lấy thời gian ngẫu nhiên giữa min và max mili giây
-        getRandomInterval(min, max) {
-            return Math.floor(Math.random() * (max - min + 1)) + min;
+    class TabKeeper {
+        constructor() {
+            this.worker = null;
+        }
+
+        start() {
+            if (!window.Worker) {
+                console.log("Web Workers không được hỗ trợ trong trình duyệt này.");
+                return;
+            }
+
+            document.addEventListener('visibilitychange', this.handleVisibilityChange.bind(this));
+        }
+
+        handleVisibilityChange() {
+            if (document.hidden) {
+                if (!this.worker) {
+                    this.worker = this.createWorker();
+                    if (this.worker) {
+                        this.worker.onmessage = () => {
+                            window.dispatchEvent(new Event('mousemove'));
+                            console.log("Tab vẫn đang hoạt động");
+                        };
+                    }
+                }
+            } else if (this.worker) {
+                this.worker.terminate();
+                this.worker = null;
+            }
+        }
+
+        createWorker() {
+            try {
+                const blob = new Blob([
+                    `setInterval(() => { self.postMessage('keepAlive'); }, 20000);`
+                ], { type: 'application/javascript' });
+                return new Worker(URL.createObjectURL(blob));
+            } catch (e) {
+                console.error("Không thể tạo Worker:", e);
+                return null;
+            }
         }
     }
 
-    // Hàm giả lập document luôn ở trạng thái "visible" và window luôn được focus
-    function simulateTabVisibilityAndFocus() {
-        Object.defineProperty(document, 'visibilityState', {
-            configurable: true,
-            get: () => 'visible',
-        });
+    class UIManager {
+        constructor() {
+            this.clicker = null;
+            this.tabKeeper = new TabKeeper();
+        }
 
-        Object.defineProperty(document, 'hidden', {
-            configurable: true,
-            get: () => false,
-        });
+        init() {
+            this.createButton("Start Ads", this.startClicking.bind(this), { right: '10px', backgroundColor: '#28a745' });
+            this.createButton("Stop Ads", this.stopClicking.bind(this), { left: '10px', backgroundColor: '#dc3545' });
+        }
 
-        document.addEventListener('visibilitychange', (event) => {
-            event.stopImmediatePropagation();
-        }, true);
+        createButton(text, onClick, styles) {
+            const button = document.createElement('button');
+            button.innerText = text;
+            Object.assign(button.style, {
+                position: 'fixed',
+                bottom: '10px',
+                zIndex: '9999',
+                padding: '10px',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                ...styles
+            });
+            button.addEventListener('click', onClick);
+            document.body.appendChild(button);
+        }
 
-        window.addEventListener('blur', () => {
-            window.focus();
-            console.log('Tab đã bị blur, focus lại ngay.');
-        }, true);
+        startClicking() {
+            console.info('Bắt đầu AutoClicker...');
+            this.tabKeeper.start();
+            this.clicker = new AutoClicker("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
+            this.clicker.start();
+        }
 
-        Object.defineProperty(document, 'hasFocus', {
-            configurable: true,
-            get: () => () => true,
-        });
+        stopClicking() {
+            console.info('Dừng AutoClicker...');
+            if (this.clicker) {
+                this.clicker.stop();
+            }
+        }
     }
 
-    // Thêm button vào cuối body
-    const startButton = document.createElement('button');
-    startButton.innerText = "Start Ads";
-    Object.assign(startButton.style, {
-        position: 'fixed',
-        bottom: '10px',
-        right: '10px',
-        zIndex: '9999',
-        padding: '10px',
-        backgroundColor: '#28a745',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer'
-    });
-
-    startButton.addEventListener('click', () => {
-        console.info('Button được nhấn, bắt đầu AutoClicker...');
-        simulateTabVisibilityAndFocus();
-        const clicker = new AutoClicker("#root > div._outlet_qvl9w_21 > div > div._container_12n6k_1 > div:nth-child(1) > div > div > button");
-        clicker.start();
-    });
-
-    const clearButton = document.createElement('button');
-    clearButton.innerText = "Clear";
-    Object.assign(clearButton.style, {
-        position: 'fixed',
-        bottom: '10px',
-        left: '10px',
-        zIndex: '9999',
-        padding: '10px',
-        backgroundColor: '#dc3545',
-        color: '#fff',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer'
-    });
-
-    clearButton.addEventListener('click', () => {
-        console.info('Button được nhấn, dừng AutoClicker...');
-        if (clicker) {
-            clicker.stop();
-        }
-    });
-
-    document.body.appendChild(startButton);
-    document.body.appendChild(clearButton);
+    const ui = new UIManager();
+    ui.init();
 })();
